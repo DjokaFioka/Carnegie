@@ -3,6 +3,7 @@ package rs.djokafioka.carnegie;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -12,5 +13,6 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toast.makeText(this, "test", Toast.LENGTH_SHORT).show();
     }
 }
