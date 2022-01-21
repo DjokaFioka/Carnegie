@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:layout="@layout/preference_category_layout"
+        android:title="@string/prefs_api_settings">
+
+        <EditTextPreference
+            android:key="settings_api_url"
+            android:negativeButtonText="@string/dlg_confirm"
+            android:positiveButtonText="@string/dlg_cancel"
+            android:title="@string/prefs_api_url"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            android:layout="@layout/preferences_divider_layout"
+            android:selectable="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:layout="@layout/preference_category_layout"
+        android:title="@string/menu_settings">
+        <Preference
+            android:key="settings_device_id"
+            android:selectable="false"
+            android:title="@string/prefs_device_id"
+            app:iconSpaceReserved="false" />
+        <Preference
+            android:key="settings_registered_user"
+            android:selectable="false"
+            android:title="@string/prefs_registered_user"
+            app:iconSpaceReserved="false" />
+        <Preference
+            android:key="settings_app_version"
+            android:selectable="false"
+            android:title="@string/prefs_app_version"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+</PreferenceScreen>
