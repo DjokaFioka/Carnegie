@@ -15,14 +15,37 @@
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="confirm_password">Confirm password</string>
+    <string name="change_password">Change password</string>
+    <string name="api_url">API URL</string>
+    <string name="api_url_dlg_msg">Set API URL</string>
+    <string name="api_url_empty_login_error">API URL is not set. Login is impossible.</string>
+    <string name="api_url_empty_registration_error">API URL is not set. User registration is impossible.</string>
     <string name="compare_password_error">Passwords don\'t match!</string>
     <string name="login">Login</string>
     <string name="register">Register</string>
     <string name="email_empty_error">Email is mandatory!</string>
     <string name="password_empty_error">Password is mandatory!</string>
     <string name="login_success_message">Login successful!</string>
+    <string name="registration_success_message">User registered successfully!\nWould you like to register more users?</string>
     <string name="dlg_error_header">Error!</string>
+    <string name="dlg_notification_header">Notification</string>
+    <string name="dlg_warning_header">Warning</string>
     <string name="dlg_login_error_message">An error occurred during login: %1$s</string>
+    <string name="dlg_get_contact_list_error_message">An error occurred while getting contact list: %1$s</string>
+    <string name="dlg_registration_error_message">An error occurred during user registration: %1$s</string>
     <string name="ok">OK</string>
     <string name="forgotten_password_on_email">New password has been sent successfully. Check you spam folder!</string>
+
+    <string name="contact">Contact</string>
+    <string name="contact_header">Contact List</string>
+    <string name="contact_delete_all">Delete all contacts</string>
+    <string name="contact_delete_all_confirmation">Are you sure you want to delete all contacts?</string>
+    <string name="contact_delete_confirmation">Are you sure you want to delete this contact?</string>
+    <string name="contact_delete">Delete contact</string>
+    <string name="contact_phone_number">Phone number</string>
+    <string name="search">Search</string>
+    <string name="dlg_logout_confirmation">Are you sure you want to log off?</string>
+    <string name="save">Save</string>
+    <string name="contact_address">Address</string>
+
 </resources>

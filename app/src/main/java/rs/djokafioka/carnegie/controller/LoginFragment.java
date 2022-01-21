@@ -1,6 +1,7 @@
 package rs.djokafioka.carnegie.controller;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
 import android.view.LayoutInflater;
@@ -13,12 +14,15 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import rs.djokafioka.carnegie.MainActivity;
 import rs.djokafioka.carnegie.R;
+import rs.djokafioka.carnegie.controller.contacts.ContactListFragment;
 import rs.djokafioka.carnegie.sync.LoginTask;
 import rs.djokafioka.carnegie.sync.ResetPasswordTask;
 import rs.djokafioka.carnegie.sync.model.SyncDataResult;
+import rs.djokafioka.carnegie.utils.SharedPreferencesHelper;
 
 /**
  * Created by Djordje on 20.1.2022..
@@ -33,6 +37,7 @@ public class LoginFragment extends Fragment implements LoginTask.OnLoginListener
     private Button mBtnRegister;
     private ImageView mImgShowHidePassword;
     private ImageView mImgForgottenPassword;
+    private ImageView mImgSettings;
 
     private boolean mIsPasswordVisible;
 
@@ -59,6 +64,7 @@ public class LoginFragment extends Fragment implements LoginTask.OnLoginListener
         mImgForgottenPassword = (ImageView) v.findViewById(R.id.img_forgotten_pass);
         mBtnLogin = (Button) v.findViewById(R.id.btn_login);
         mBtnRegister = (Button) v.findViewById(R.id.btn_register);
+        mImgSettings = (ImageView) v.findViewById(R.id.img_settings);
 
         mImgShowHidePassword.setOnClickListener(new View.OnClickListener()
         {
@@ -92,15 +98,44 @@ public class LoginFragment extends Fragment implements LoginTask.OnLoginListener
                 if (mTxtEmail.getText().toString().isEmpty())
                 {
                     Toast.makeText(getContext(), R.string.email_empty_error, Toast.LENGTH_SHORT).show();
-                    return;
                 }
                 else if (mTxtPassword.getText().toString().isEmpty())
                 {
                     Toast.makeText(getContext(), R.string.password_empty_error, Toast.LENGTH_SHORT).show();
-                    return;
                 }
+                else if (SharedPreferencesHelper.getInstance().getApiUrl().isEmpty())
+                {
+                    View dialogView = getLayoutInflater().inflate(R.layout.dialog_edittext, null);
+                    final EditText txtAPIURL = (EditText) dialogView.findViewById(R.id.dlg_text);
 
-                loginUser(mTxtEmail.getText().toString(), mTxtPassword.getText().toString());
+                    new AlertDialog.Builder(getContext())
+                            .setIcon(R.drawable.vd_cloud)
+                            .setMessage(R.string.api_url_dlg_msg)
+                            .setTitle(R.string.api_url)
+                            .setView(dialogView)
+                            .setPositiveButton(R.string.dlg_confirm, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int whichButton)
+                                {
+                                    String apiURL = txtAPIURL.getText().toString();
+                                    if (!apiURL.isEmpty())
+                                    {
+                                        SharedPreferencesHelper.getInstance().setApiUrl(apiURL);
+                                        loginUser(mTxtEmail.getText().toString(), mTxtPassword.getText().toString());
+                                    }
+                                    else
+                                    {
+                                        Toast.makeText(getContext(), R.string.api_url_empty_login_error, Toast.LENGTH_SHORT).show();
+                                    }
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setNegativeButton(R.string.dlg_cancel, null)
+                            .show();
+                }
+                else
+                {
+                    loginUser(mTxtEmail.getText().toString(), mTxtPassword.getText().toString());
+                }
             }
         });
 
@@ -113,6 +148,15 @@ public class LoginFragment extends Fragment implements LoginTask.OnLoginListener
             }
         });
 
+        mImgSettings.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                ((MainActivity)getActivity()).showFragment(SettingsFragment.newInstance(), true);
+            }
+        });
+
         return v;
     }
 
@@ -122,7 +166,6 @@ public class LoginFragment extends Fragment implements LoginTask.OnLoginListener
         super.onResume();
         getActivity().setTitle(R.string.app_name);
         mTxtEmail.requestFocus();
-        //TODO Show dialog for adding API URL if it's empty in the Shared Prefs
     }
 
     @Override
@@ -196,10 +239,10 @@ public class LoginFragment extends Fragment implements LoginTask.OnLoginListener
     {
         mIsRunning = false;
         ((MainActivity) getActivity()).dismissMainProgressBar();
-        if (syncDataResult.getError().isEmpty())
+        if (syncDataResult.isSuccess() && syncDataResult.getError().isEmpty())
         {
             Toast.makeText(getContext(), R.string.login_success_message, Toast.LENGTH_SHORT).show();
-            //TODO Show ContactsFragment
+            ((MainActivity)getActivity()).showFragment(ContactListFragment.newInstance(), false);
         }
         else
         {
@@ -211,7 +254,7 @@ public class LoginFragment extends Fragment implements LoginTask.OnLoginListener
                     .setTitle(getString(R.string.dlg_error_header))
                     .setMessage(getString(R.string.dlg_login_error_message, errorMessage))
                     .setPositiveButton(R.string.ok, null)
-                    .setIcon(getResources().getDrawable(R.drawable.vd_error_red_24dp))
+                    .setIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.vd_error_red_24dp, null))
                     .show();
         }
     }

@@ -7,4 +7,5 @@
 
     <color name="darker_gray">#676767</color>
     <color name="darker_gray_semi_transparent">#66676767</color>
+    <color name="black">#000000</color>
 </resources>

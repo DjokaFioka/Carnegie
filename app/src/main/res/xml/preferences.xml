@@ -8,8 +8,8 @@
 
         <EditTextPreference
             android:key="settings_api_url"
-            android:negativeButtonText="@string/dlg_confirm"
-            android:positiveButtonText="@string/dlg_cancel"
+            android:negativeButtonText="@string/dlg_cancel"
+            android:positiveButtonText="@string/dlg_confirm"
             android:title="@string/prefs_api_url"
             app:iconSpaceReserved="false" />
 

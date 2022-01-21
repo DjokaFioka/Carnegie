@@ -52,7 +52,7 @@ public class PasswordView extends LinearLayout
 
     private void init() {
         setOrientation(HORIZONTAL);
-        inflate(getContext(), R.layout.password_view, this);
+        inflate(getContext(), R.layout.view_password, this);
 
         mTxtPasswordCaption = (TextView) findViewById(R.id.txt_password_caption);
         mTxtPassword = (EditText) findViewById(R.id.txt_password);

@@ -34,6 +34,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
     {
+        addPreferencesFromResource(R.xml.preferences);
+
         mAPIURLPrefs = (EditTextPreference) findPreference(SharedPreferencesHelper.API_URL_KEY);
         mAPIURLPrefs.setSummary(mAPIURLPrefs.getText());
 
@@ -75,8 +77,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     {
         if (key.equals(SharedPreferencesHelper.API_URL_KEY))
         {
-            mAPIURLPrefs.setSummary(SharedPreferencesHelper.getInstance().getApiUrl());
-            SharedPreferencesHelper.getInstance().setApiUrl(mAPIURLPrefs.getText());
+            mAPIURLPrefs.setSummary(mAPIURLPrefs.getText());
         }
     }
 

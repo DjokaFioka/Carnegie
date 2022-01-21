@@ -14,7 +14,9 @@ public class AppConsts
     public static final int WRITE_TIMEOUT_SECONDS = 20;
 
     public static final String API_TOKEN = "Token";
+    public static final String API_REGISTER = "api/Account/Register";
     public static final String API_RESET_PASSWORD = "api/Account/ResetPassword";
     public static final String API_CHANGE_PASSWORD = "api/Account/ChangePassword";
+    public static final String API_GET_CONTACTS = "api/Contact/GetContacts";
     public static final String API_AUTHORIZATION_CODE = "HelloCarnegie";
 }

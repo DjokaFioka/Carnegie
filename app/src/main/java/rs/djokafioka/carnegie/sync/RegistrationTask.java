@@ -1,8 +1,8 @@
 package rs.djokafioka.carnegie.sync;
 
-import android.util.Log;
-
 import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 import org.json.JSONObject;
 
@@ -17,36 +17,33 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import rs.djokafioka.carnegie.sync.model.SyncDataResult;
 import rs.djokafioka.carnegie.utils.AppConsts;
-import rs.djokafioka.carnegie.utils.SharedPreferencesHelper;
 
 /**
- * Created by Djordje on 20.1.2022..
+ * Created by Djordje on 21.1.2022..
  */
-public class LoginTask extends BaseBackgroundTask
+public class RegistrationTask extends BaseBackgroundTask
 {
-    private static final String TAG = "LoginTask";
-
-    private String mEmail;
-    private String mPassword;
-    private SyncDataResult mSyncDataResult;
-    private OnLoginListener mOnLoginListener;
+    private static final String TAG = "RegistrationTask";
 
     private final OkHttpClient mClient;
     private Call mCall;
     private Gson mGson;
+    private SyncDataResult mSyncDataResult;
+    private OnRegistrationListener mOnRegistrationListener;
+    private RegisterBindingModel mRegisterBindingModel;
 
-    public LoginTask(String email, String password, OnLoginListener onLoginListener)
+    public RegistrationTask(String email, String password, String confirmPassword, OnRegistrationListener onRegistrationListener)
     {
-        mEmail = email;
-        mPassword = password;
+        mRegisterBindingModel = new RegisterBindingModel(email, password, confirmPassword);
         mClient = new OkHttpClient.Builder()
                 .connectTimeout(AppConsts.CONNECTIVITY_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .writeTimeout(AppConsts.WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .readTimeout(AppConsts.READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .build();
 
+        mGson = new Gson();
         mSyncDataResult = new SyncDataResult();
-        mOnLoginListener = onLoginListener;
+        mOnRegistrationListener = onRegistrationListener;
     }
 
     @Override
@@ -54,8 +51,6 @@ public class LoginTask extends BaseBackgroundTask
     {
         Request request = new Request.Builder()
                 .url(composeServerAddress())
-                .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                .addHeader("Accept", "application/json")
                 .post(RequestBody.create(getJsonBody(), AppConsts.MEDIA_TYPE_JSON))
                 .build();
 
@@ -70,18 +65,6 @@ public class LoginTask extends BaseBackgroundTask
             if (response.isSuccessful())
             {
                 mSyncDataResult.setSuccess(true);
-
-                body = response.body();
-                if (body != null)
-                {
-                    JSONObject json = new JSONObject(body.string());
-                    String token = json.getString("access_token");
-                    String userName = json.getString("userName");
-                    Log.d(TAG, "doInBackground: token = " + token);
-                    Log.d(TAG, "doInBackground: userName = " + userName);
-                    SharedPreferencesHelper.getInstance().setRegisteredUser(userName);
-                    SharedPreferencesHelper.getInstance().setToken(token);
-                }
             }
             else
             {
@@ -114,7 +97,6 @@ public class LoginTask extends BaseBackgroundTask
                 response.close();
             }
         }
-
     }
 
     @Override
@@ -126,25 +108,79 @@ public class LoginTask extends BaseBackgroundTask
     @Override
     public void onPostExecute()
     {
-        if (mOnLoginListener != null)
-            mOnLoginListener.onLoginCompleted(mSyncDataResult);
+        if (mOnRegistrationListener != null)
+            mOnRegistrationListener.onRegistrationCompleted(mSyncDataResult);
     }
 
     private String getJsonBody()
     {
-        return "username=" + mEmail + "&password=" + mPassword + "&grant_type=password";
+        return mGson.toJson(mRegisterBindingModel);
     }
 
     private String composeServerAddress()
     {
-        String apiURL = SharedPreferencesHelper.getInstance().getApiUrl();
-        if (!apiURL.isEmpty())
-            apiURL += AppConsts.API_TOKEN;
-        return apiURL;
+        return getAPIURL() + AppConsts.API_REGISTER;
     }
 
-    public interface OnLoginListener
+    public interface OnRegistrationListener
     {
-        void onLoginCompleted(SyncDataResult syncDataResult);
+        void onRegistrationCompleted(SyncDataResult syncDataResult);
+    }
+
+    private static class RegisterBindingModel
+    {
+        @Expose
+        @SerializedName("Email")
+        private String mEmail;
+
+        @Expose
+        @SerializedName("Password")
+        private String mPassword;
+
+        @Expose
+        @SerializedName("ConfirmPassword")
+        private String mConfirmPassword;
+
+        @Expose
+        @SerializedName("AuthorizationCode")
+        private final String mAuthorizationCode;
+
+        public RegisterBindingModel(String email, String password, String confirmPassword)
+        {
+            mEmail = email;
+            mPassword = password;
+            mConfirmPassword = confirmPassword;
+            mAuthorizationCode = AppConsts.API_AUTHORIZATION_CODE;
+        }
+
+        public String getEmail()
+        {
+            return mEmail;
+        }
+
+        public void setEmail(String email)
+        {
+            mEmail = email;
+        }
+
+        public String getPassword()
+        {
+            return mPassword;
+        }
+
+        public void setPassword(String password)
+        {
+            mPassword = password;
+        }
+
+        public String getConfirmPassword()
+        {
+            return mConfirmPassword;
+        }
+
+        public void setConfirmPassword(String confirmPassword)
+        {
+            mConfirmPassword = confirmPassword;
+        }
     }
 }
