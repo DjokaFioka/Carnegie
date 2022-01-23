@@ -15,6 +15,8 @@
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="confirm_password">Confirm password</string>
+    <string name="old_password">Old password</string>
+    <string name="new_password">New password</string>
     <string name="change_password">Change password</string>
     <string name="api_url">API URL</string>
     <string name="api_url_dlg_msg">Set API URL</string>
@@ -25,6 +27,8 @@
     <string name="register">Register</string>
     <string name="email_empty_error">Email is mandatory!</string>
     <string name="password_empty_error">Password is mandatory!</string>
+    <string name="old_password_empty_error">Old password cannot be empty!</string>
+    <string name="new_password_empty_error">New password cannot be empty!</string>
     <string name="login_success_message">Login successful!</string>
     <string name="registration_success_message">User registered successfully!\nWould you like to register more users?</string>
     <string name="dlg_error_header">Error!</string>
@@ -35,6 +39,7 @@
     <string name="dlg_registration_error_message">An error occurred during user registration: %1$s</string>
     <string name="ok">OK</string>
     <string name="forgotten_password_on_email">New password has been sent successfully. Check you spam folder!</string>
+    <string name="password_change_successfully">Password changed successfully!</string>
 
     <string name="contact">Contact</string>
     <string name="contact_header">Contact List</string>
@@ -47,5 +52,12 @@
     <string name="dlg_logout_confirmation">Are you sure you want to log off?</string>
     <string name="save">Save</string>
     <string name="contact_address">Address</string>
+    <string name="new_contact">New Contact</string>
+    <string name="contact_name_mandatory_error">New Contact</string>
+    <string name="contact_saved_success">Contact saved successfully!</string>
+    <string name="contact_saved_error">An error occurred while saving the contact: %1$s</string>
+    <string name="contact_delete_error">An error occurred while deleting: %1$s</string>
+    <string name="contact_delete_error_no_contacts">There are no contacts to delete!</string>
+    <string name="api_unauthorized_error">You are unauthorized! Most likely your authorization token expired. You need to login again.</string>
 
 </resources>

@@ -1,4 +1,4 @@
-package rs.djokafioka.carnegie.controller;
+package rs.djokafioka.carnegie.controller.custom;
 
 import android.content.Context;
 import android.os.Build;

@@ -9,7 +9,29 @@ import rs.djokafioka.carnegie.model.Contact;
  */
 public class SyncContactsResult extends SyncDataResult
 {
+    private int mPosition;
+    private Contact mContact;
     private ArrayList<Contact> mContactList;
+
+    public int getPosition()
+    {
+        return mPosition;
+    }
+
+    public void setPosition(int position)
+    {
+        mPosition = position;
+    }
+
+    public Contact getContact()
+    {
+        return mContact;
+    }
+
+    public void setContact(Contact contact)
+    {
+        mContact = contact;
+    }
 
     public ArrayList<Contact> getContactList()
     {

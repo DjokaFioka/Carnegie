@@ -66,7 +66,7 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
             public void onClick(View v)
             {
                 if (mOnContactItemClickListener != null)
-                    mOnContactItemClickListener.onContactItemDeleteClick(contact);
+                    mOnContactItemClickListener.onContactItemDeleteClick(contact, position);
             }
         });
     }
@@ -77,10 +77,16 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         return mContactList.size();
     }
 
-    public void updateTaskItemList(ArrayList<Contact> contactList)
+    public void updateContactList(ArrayList<Contact> contactList)
     {
         mContactList = contactList;
         notifyDataSetChanged();
+    }
+
+    public void removeAt(int position) {
+        mContactList.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(position, mContactList.size());
     }
 
     static final class ContactListViewHolder extends RecyclerView.ViewHolder
@@ -146,7 +152,7 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
 
     public interface OnContactItemClickListener
     {
-        void onContactItemDeleteClick(Contact contact);
+        void onContactItemDeleteClick(Contact contact, int position);
         void onContactItemClick(Contact contact);
     }
 }

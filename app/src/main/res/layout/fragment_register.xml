@@ -43,13 +43,13 @@
             android:textSize="17dp"
             android:inputType="textEmailAddress"/>
 
-        <rs.djokafioka.carnegie.controller.PasswordView
+        <rs.djokafioka.carnegie.controller.custom.PasswordView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/password"
             android:layout_marginTop="8dp"/>
 
-        <rs.djokafioka.carnegie.controller.PasswordView
+        <rs.djokafioka.carnegie.controller.custom.PasswordView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/confirm_password"

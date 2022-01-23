@@ -1,4 +1,4 @@
-package rs.djokafioka.carnegie.controller;
+package rs.djokafioka.carnegie.controller.login;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -19,8 +19,9 @@ import androidx.fragment.app.Fragment;
 import rs.djokafioka.carnegie.MainActivity;
 import rs.djokafioka.carnegie.R;
 import rs.djokafioka.carnegie.controller.contacts.ContactListFragment;
-import rs.djokafioka.carnegie.sync.LoginTask;
-import rs.djokafioka.carnegie.sync.ResetPasswordTask;
+import rs.djokafioka.carnegie.controller.settings.SettingsFragment;
+import rs.djokafioka.carnegie.sync.post_data.LoginTask;
+import rs.djokafioka.carnegie.sync.post_data.ResetPasswordTask;
 import rs.djokafioka.carnegie.sync.model.SyncDataResult;
 import rs.djokafioka.carnegie.utils.SharedPreferencesHelper;
 
@@ -246,13 +247,9 @@ public class LoginFragment extends Fragment implements LoginTask.OnLoginListener
         }
         else
         {
-            //TODO Handle different Http Response codes
-
-            String errorMessage = syncDataResult.getError();
-
             new AlertDialog.Builder(getContext())
                     .setTitle(getString(R.string.dlg_error_header))
-                    .setMessage(getString(R.string.dlg_login_error_message, errorMessage))
+                    .setMessage(getString(R.string.dlg_login_error_message, syncDataResult.getError()))
                     .setPositiveButton(R.string.ok, null)
                     .setIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.vd_error_red_24dp, null))
                     .show();

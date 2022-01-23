@@ -1,4 +1,4 @@
-package rs.djokafioka.carnegie.sync;
+package rs.djokafioka.carnegie.sync.post_data;
 
 import android.util.Log;
 
@@ -15,6 +15,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import rs.djokafioka.carnegie.sync.BaseBackgroundTask;
 import rs.djokafioka.carnegie.sync.model.SyncDataResult;
 import rs.djokafioka.carnegie.utils.AppConsts;
 import rs.djokafioka.carnegie.utils.SharedPreferencesHelper;
@@ -70,6 +71,7 @@ public class LoginTask extends BaseBackgroundTask
             if (response.isSuccessful())
             {
                 mSyncDataResult.setSuccess(true);
+                mSyncDataResult.setResponseCode(response.code());
 
                 body = response.body();
                 if (body != null)
@@ -114,12 +116,6 @@ public class LoginTask extends BaseBackgroundTask
                 response.close();
             }
         }
-
-    }
-
-    @Override
-    public void onProgressUpdate(double progress)
-    {
 
     }
 

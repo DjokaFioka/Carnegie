@@ -1,4 +1,4 @@
-package rs.djokafioka.carnegie.sync;
+package rs.djokafioka.carnegie.sync.post_data;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
@@ -15,6 +15,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import rs.djokafioka.carnegie.sync.BaseBackgroundTask;
 import rs.djokafioka.carnegie.sync.model.SyncDataResult;
 import rs.djokafioka.carnegie.utils.AppConsts;
 
@@ -23,7 +24,7 @@ import rs.djokafioka.carnegie.utils.AppConsts;
  */
 public class ResetPasswordTask extends BaseBackgroundTask
 {
-    private static final String TAG = "ResetPassword";
+    private static final String TAG = "ResetPasswordTask";
 
     private final OkHttpClient mClient;
     private Call mCall;
@@ -69,6 +70,8 @@ public class ResetPasswordTask extends BaseBackgroundTask
             else
             {
                 mSyncDataResult.setSuccess(false);
+                mSyncDataResult.setResponseCode(response.code());
+
                 body = response.body();
                 if (body != null)
                 {
@@ -97,12 +100,6 @@ public class ResetPasswordTask extends BaseBackgroundTask
                 response.close();
             }
         }
-    }
-
-    @Override
-    public void onProgressUpdate(double progress)
-    {
-
     }
 
     @Override

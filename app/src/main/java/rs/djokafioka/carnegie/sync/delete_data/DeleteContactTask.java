@@ -1,12 +1,10 @@
-package rs.djokafioka.carnegie.sync.get_data;
+package rs.djokafioka.carnegie.sync.delete_data;
 
 import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -20,19 +18,33 @@ import rs.djokafioka.carnegie.sync.model.SyncContactsResult;
 import rs.djokafioka.carnegie.utils.AppConsts;
 
 /**
- * Created by Djordje on 21.1.2022..
+ * Created by Djordje on 23.1.2022..
  */
-public class GetContactsTask extends BaseBackgroundTask
+public class DeleteContactTask extends BaseBackgroundTask
 {
-    private static final String TAG = "GetContactsTask";
 
     private final OkHttpClient mClient;
     private Call mCall;
     private Gson mGson;
     private SyncContactsResult mSyncContactsResult;
-    private OnGetContactsListener mOnGetContactsListener;
+    private int mPosition;
+    private OnContactDeleteListener mOnContactDeleteListener;
 
-    public GetContactsTask(OnGetContactsListener onGetContactsListener)
+    /**
+     * Use this constructor to delete all contacts
+     * @param onContactDeleteListener callback interface
+     */
+    public DeleteContactTask(OnContactDeleteListener onContactDeleteListener)
+    {
+        this(null, onContactDeleteListener);
+    }
+
+    /**
+     * Use this constructor to delete a single contact
+     * @param contact contact to delete
+     * @param onContactDeleteListener callback interface
+     */
+    public DeleteContactTask(Contact contact, OnContactDeleteListener onContactDeleteListener)
     {
         mClient = new OkHttpClient.Builder()
                 .connectTimeout(AppConsts.CONNECTIVITY_TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -42,7 +54,8 @@ public class GetContactsTask extends BaseBackgroundTask
 
         mGson = new Gson();
         mSyncContactsResult = new SyncContactsResult();
-        mOnGetContactsListener = onGetContactsListener;
+        mSyncContactsResult.setContact(contact);
+        mOnContactDeleteListener = onContactDeleteListener;
     }
 
     @Override
@@ -51,38 +64,20 @@ public class GetContactsTask extends BaseBackgroundTask
         Request request = new Request.Builder()
                 .url(composeServerAddress())
                 .header("Authorization", getHeaderFormattedToken())
-                .get()
+                .delete()
                 .build();
 
         Response response = null;
         ResponseBody body;
-        ArrayList<Contact> contactList = new ArrayList<>();
 
         try
         {
-            JsonReader reader = null;
             mCall = mClient.newCall(request);
             response = mCall.execute();
 
             if (response.isSuccessful())
             {
                 mSyncContactsResult.setSuccess(true);
-                body = response.body();
-                if(body != null)
-                {
-                    reader = new JsonReader(body.charStream());
-                    reader.beginArray();
-                    while (reader.hasNext())
-                    {
-                        if (isCancelled())
-                            break;
-                        Contact contact = mGson.fromJson(reader, Contact.class);
-                        contactList.add(contact);
-                    }
-                    reader.endArray();
-                }
-
-                mSyncContactsResult.setContactList(contactList);
             }
             else
             {
@@ -122,18 +117,26 @@ public class GetContactsTask extends BaseBackgroundTask
     @Override
     public void onPostExecute()
     {
-        if (mOnGetContactsListener != null)
-            mOnGetContactsListener.onGetContactsCompleted(mSyncContactsResult);
+        if (mOnContactDeleteListener != null)
+            mOnContactDeleteListener.onContactDeleteCompleted(mSyncContactsResult);
     }
 
     private String composeServerAddress()
     {
-        return getAPIURL() + AppConsts.API_GET_CONTACTS;
+        //If contact is null it means that all contacts should be deleted. Otherwise, we compose the URL from contact Id
+        if (mSyncContactsResult.getContact() == null)
+            return getAPIURL() + AppConsts.API_DELETE_ALL_CONTACTS;
+        else
+            return getAPIURL() + AppConsts.API_DELETE_CONTACT + "?id=" + mSyncContactsResult.getContact().getId();
     }
 
-    public interface OnGetContactsListener
+    public void setPosition(int position)
     {
-        void onGetContactsCompleted(SyncContactsResult syncContactResult);
+        mSyncContactsResult.setPosition(position);
     }
 
+    public interface OnContactDeleteListener
+    {
+        void onContactDeleteCompleted(SyncContactsResult syncContactsResult);
+    }
 }

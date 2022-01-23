@@ -18,5 +18,9 @@ public class AppConsts
     public static final String API_RESET_PASSWORD = "api/Account/ResetPassword";
     public static final String API_CHANGE_PASSWORD = "api/Account/ChangePassword";
     public static final String API_GET_CONTACTS = "api/Contact/GetContacts";
+    public static final String API_ADD_CONTACT = "api/Contact/Add";
+    public static final String API_EDIT_CONTACT = "api/Contact/Edit";
+    public static final String API_DELETE_CONTACT = "api/Contact/Delete";
+    public static final String API_DELETE_ALL_CONTACTS = "api/Contact/DeleteAll";
     public static final String API_AUTHORIZATION_CODE = "HelloCarnegie";
 }

@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
@@ -27,18 +28,23 @@ import androidx.recyclerview.widget.RecyclerView;
 import rs.djokafioka.carnegie.BackButtonHandler;
 import rs.djokafioka.carnegie.MainActivity;
 import rs.djokafioka.carnegie.R;
-import rs.djokafioka.carnegie.controller.SettingsFragment;
+import rs.djokafioka.carnegie.controller.dialogs.PasswordChangeDialog;
+import rs.djokafioka.carnegie.controller.settings.SettingsFragment;
 import rs.djokafioka.carnegie.model.Contact;
 import rs.djokafioka.carnegie.sync.get_data.GetContactsTask;
 import rs.djokafioka.carnegie.sync.model.SyncContactsResult;
+import rs.djokafioka.carnegie.sync.delete_data.DeleteContactTask;
+import rs.djokafioka.carnegie.sync.model.SyncDataResult;
+import rs.djokafioka.carnegie.sync.post_data.ChangePasswordTask;
 
 /**
  * Created by Djordje on 21.1.2022..
  */
 public class ContactListFragment extends Fragment implements BackButtonHandler, ContactListAdapter.OnContactItemClickListener,
-        GetContactsTask.OnGetContactsListener
+        GetContactsTask.OnGetContactsListener, DeleteContactTask.OnContactDeleteListener, PasswordChangeDialog.OnPasswordChangeListener
 {
     private static final String TAG = "ContactListFragment";
+    public static final int PASSWORD_CHANGE_DIALOG_REQUEST_CODE = 1122;
 
     private ImageView mImgDeleteAll;
     private RecyclerView mRecContactList;
@@ -50,6 +56,12 @@ public class ContactListFragment extends Fragment implements BackButtonHandler, 
 
     private boolean mIsGetContactsRunning;
     private GetContactsTask mGetContactsTask;
+
+    private boolean mIsDeleteRunning;
+    private DeleteContactTask mDeleteContactTask;
+
+    private boolean mIsPasswordChangeRunning;
+    private ChangePasswordTask mChangePasswordTask;
 
     public static ContactListFragment newInstance()
     {
@@ -107,8 +119,8 @@ public class ContactListFragment extends Fragment implements BackButtonHandler, 
             @Override
             public void onClick(View v)
             {
-                //TODO
-                Toast.makeText(getContext(), "Show Fragment For Adding/Editing contact", Toast.LENGTH_SHORT).show();
+                Contact contact = new Contact();
+                ((MainActivity)getActivity()).showFragment(ContactFragment.newInstance(contact), true);
             }
         });
 
@@ -129,6 +141,8 @@ public class ContactListFragment extends Fragment implements BackButtonHandler, 
     {
         super.onPause();
         stopGettingContacts();
+        stopDeletingTask();
+        stopChangingPassword();
     }
 
     @Override
@@ -189,7 +203,7 @@ public class ContactListFragment extends Fragment implements BackButtonHandler, 
                 ((MainActivity)getActivity()).showFragment(SettingsFragment.newInstance(), true);
                 return true;
             case R.id.menu_change_password:
-                //TODO Show fragment or dialog to change password
+                showPasswordChangeDialog();
                 return true;
         }
         return false;
@@ -232,7 +246,7 @@ public class ContactListFragment extends Fragment implements BackButtonHandler, 
             }
             else
             {
-                mContactListAdapter.updateTaskItemList(contactList);
+                mContactListAdapter.updateContactList(contactList);
             }
             mRecContactList.setAdapter(mContactListAdapter);
         }
@@ -287,13 +301,13 @@ public class ContactListFragment extends Fragment implements BackButtonHandler, 
         {
             mContactList = syncContactResult.getContactList();
             if (mContactListAdapter != null)
-                mContactListAdapter.updateTaskItemList(mContactList);
+                mContactListAdapter.updateContactList(mContactList);
         }
         else
         {
-            //TODO Handle different Http Response codes
-
             String errorMessage = syncContactResult.getError();
+            if (syncContactResult.getResponseCode() == HttpURLConnection.HTTP_UNAUTHORIZED)
+                errorMessage = getString(R.string.api_unauthorized_error);
 
             new AlertDialog.Builder(getContext())
                     .setTitle(getString(R.string.dlg_error_header))
@@ -306,7 +320,7 @@ public class ContactListFragment extends Fragment implements BackButtonHandler, 
     }
 
     @Override
-    public void onContactItemDeleteClick(Contact contact)
+    public void onContactItemDeleteClick(Contact contact, int position)
     {
         new AlertDialog.Builder(getContext())
                 .setTitle(getString(R.string.dlg_warning_header))
@@ -316,7 +330,7 @@ public class ContactListFragment extends Fragment implements BackButtonHandler, 
                     @Override
                     public void onClick(DialogInterface dialog, int which)
                     {
-                        deleteContact(contact);
+                        deleteContact(contact, position);
                         dialog.dismiss();
                     }
                 })
@@ -328,17 +342,162 @@ public class ContactListFragment extends Fragment implements BackButtonHandler, 
     @Override
     public void onContactItemClick(Contact contact)
     {
-        //TODO
-        Toast.makeText(getContext(), "Show Fragment For Adding/Editing contact", Toast.LENGTH_SHORT).show();
+        ((MainActivity)getActivity()).showFragment(ContactFragment.newInstance(contact), true);
     }
 
-    private void deleteContact(Contact contact)
+    private void deleteContact(Contact contact, int position)
     {
-        //TODO
+        if (!mIsDeleteRunning)
+        {
+            mIsDeleteRunning = true;
+            ((MainActivity)getActivity()).showMainProgressBar();
+            mDeleteContactTask = new DeleteContactTask(contact, this);
+            mDeleteContactTask.setPosition(position);
+            mDeleteContactTask.execute();
+        }
     }
 
     private void deleteAllContacts()
     {
-
+        if (!mIsDeleteRunning)
+        {
+            if (mContactList != null && mContactList.size() == 0)
+            {
+                Toast.makeText(getContext(), R.string.contact_delete_error_no_contacts, Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                mIsDeleteRunning = true;
+                ((MainActivity)getActivity()).showMainProgressBar();
+                mDeleteContactTask = new DeleteContactTask(this);
+                mDeleteContactTask.execute();
+            }
+        }
     }
+
+    private void stopDeletingTask()
+    {
+        if (mDeleteContactTask != null && mIsDeleteRunning)
+        {
+            ((MainActivity) getActivity()).dismissMainProgressBar();
+            mDeleteContactTask.cancel();
+            mIsDeleteRunning = false;
+        }
+    }
+
+    @Override
+    public void onContactDeleteCompleted(SyncContactsResult syncContactsResult)
+    {
+        mIsDeleteRunning = false;
+        ((MainActivity) getActivity()).dismissMainProgressBar();
+        if (syncContactsResult.isSuccess() && syncContactsResult.getError().isEmpty())
+        {
+            if (syncContactsResult.getContact() == null)
+            {
+                mContactList.clear();
+                if (mContactListAdapter != null)
+                    mContactListAdapter.updateContactList(mContactList);
+            }
+            else
+            {
+                if (mContactListAdapter != null)
+                    mContactListAdapter.removeAt(syncContactsResult.getPosition());
+            }
+        }
+        else
+        {
+            String error = syncContactsResult.getError();
+            if (syncContactsResult.getResponseCode() == HttpURLConnection.HTTP_UNAUTHORIZED)
+                error = getString(R.string.api_unauthorized_error);
+
+            new AlertDialog.Builder(getContext())
+                    .setTitle(getString(R.string.dlg_error_header))
+                    .setMessage(getString(R.string.contact_delete_error, error))
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+                            getContacts();
+                        }
+                    })
+                    .setIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.vd_error_red_24dp, null))
+                    .show();
+        }
+    }
+
+    private void showPasswordChangeDialog()
+    {
+        PasswordChangeDialog passwordChangeDialog = PasswordChangeDialog.newInstance();
+        passwordChangeDialog.setTargetFragment(this, PASSWORD_CHANGE_DIALOG_REQUEST_CODE);
+        passwordChangeDialog.show(getActivity().getSupportFragmentManager(), PasswordChangeDialog.TAG);
+    }
+
+    @Override
+    public void onPasswordChangeConfirmed(String oldPassword, String newPassword, String confirmPassword)
+    {
+        if (oldPassword.isEmpty())
+        {
+            Toast.makeText(getContext(), R.string.old_password_empty_error, Toast.LENGTH_SHORT).show();
+        }
+        if (newPassword.isEmpty())
+        {
+            Toast.makeText(getContext(), R.string.new_password_empty_error, Toast.LENGTH_SHORT).show();
+        }
+        else if (!newPassword.equals(confirmPassword))
+        {
+            Toast.makeText(getContext(), R.string.compare_password_error, Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            startChangePasswordTask(oldPassword, newPassword, confirmPassword);
+        }
+    }
+
+    private void startChangePasswordTask(String oldPassword, String newPassword, String confirmPassword)
+    {
+        if (!mIsPasswordChangeRunning)
+        {
+            mIsPasswordChangeRunning = true;
+            ((MainActivity)getActivity()).showMainProgressBar();
+            mChangePasswordTask = new ChangePasswordTask(oldPassword, newPassword, confirmPassword, new ChangePasswordTask.OnChangePasswordListener()
+            {
+                @Override
+                public void onChangePasswordCompleted(SyncDataResult syncDataResult)
+                {
+                    mIsPasswordChangeRunning = false;
+                    ((MainActivity) getActivity()).dismissMainProgressBar();
+                    if (syncDataResult.isSuccess() && syncDataResult.getError().isEmpty())
+                    {
+                        Toast.makeText(getContext(), R.string.password_change_successfully, Toast.LENGTH_SHORT).show();
+                    }
+                    else
+                    {
+                        String error = syncDataResult.getError();
+                        if (syncDataResult.getResponseCode() == HttpURLConnection.HTTP_UNAUTHORIZED)
+                            error = getString(R.string.api_unauthorized_error);
+
+                        new AlertDialog.Builder(getContext())
+                                .setTitle(getString(R.string.dlg_error_header))
+                                .setMessage(getString(R.string.contact_delete_error, error))
+                                .setPositiveButton(R.string.ok, null)
+                                .setIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.vd_error_red_24dp, null))
+                                .show();
+                    }
+                }
+            });
+            mChangePasswordTask.execute();
+        }
+    }
+
+    private void stopChangingPassword()
+    {
+        if (mChangePasswordTask != null && mIsPasswordChangeRunning)
+        {
+            ((MainActivity) getActivity()).dismissMainProgressBar();
+            mChangePasswordTask.cancel();
+            mIsPasswordChangeRunning = false;
+        }
+    }
+
 }

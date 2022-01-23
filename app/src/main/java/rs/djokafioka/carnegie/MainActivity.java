@@ -5,7 +5,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import rs.djokafioka.carnegie.controller.LoginFragment;
+import rs.djokafioka.carnegie.controller.login.LoginFragment;
 
 import android.os.Bundle;
 import android.view.MenuItem;

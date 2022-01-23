@@ -58,6 +58,5 @@ public abstract class BaseBackgroundTask
     }
 
     public abstract void doInBackground();
-    public abstract void onProgressUpdate(double progress);
     public abstract void onPostExecute();
 }

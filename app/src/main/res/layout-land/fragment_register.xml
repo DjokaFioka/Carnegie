@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:id="@+id/img_logo"
+        android:layout_marginBottom="16dp"
+        android:scaleType="fitCenter"
+        android:layout_gravity="center"
+        android:contentDescription="@string/logo"
+        android:src="@drawable/ic_about"
+        android:layout_alignParentTop="true"
+        />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/img_logo">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_below="@+id/img_logo">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="4dp"
+                android:text="@string/email"
+                android:textColor="@color/darker_gray"
+                android:textSize="15dp"
+                />
+
+            <EditText
+                android:id="@+id/txt_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:background="@android:drawable/editbox_background_normal"
+                android:gravity="top"
+                android:maxLength="100"
+                android:textColor="@android:color/black"
+                android:textSize="17dp"
+                android:inputType="textEmailAddress"/>
+
+            <rs.djokafioka.carnegie.controller.custom.PasswordView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/password"
+                android:layout_marginTop="8dp"/>
+
+            <rs.djokafioka.carnegie.controller.custom.PasswordView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/confirm_password"
+                android:layout_marginTop="8dp"/>
+
+            <Button
+                android:id="@+id/btn_register"
+                style="@style/PositiveButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:minHeight="36dp"
+                android:text="@string/register"
+                android:textSize="18dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>

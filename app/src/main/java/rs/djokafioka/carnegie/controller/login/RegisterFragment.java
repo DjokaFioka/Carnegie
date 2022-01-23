@@ -1,4 +1,4 @@
-package rs.djokafioka.carnegie.controller;
+package rs.djokafioka.carnegie.controller.login;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -16,7 +16,8 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import rs.djokafioka.carnegie.MainActivity;
 import rs.djokafioka.carnegie.R;
-import rs.djokafioka.carnegie.sync.RegistrationTask;
+import rs.djokafioka.carnegie.controller.custom.PasswordView;
+import rs.djokafioka.carnegie.sync.post_data.RegistrationTask;
 import rs.djokafioka.carnegie.sync.model.SyncDataResult;
 import rs.djokafioka.carnegie.utils.SharedPreferencesHelper;
 
@@ -179,13 +180,9 @@ public class RegisterFragment extends Fragment implements RegistrationTask.OnReg
         }
         else
         {
-            //TODO Handle different Http Response codes
-
-            String errorMessage = syncDataResult.getError();
-
             new AlertDialog.Builder(getContext())
                     .setTitle(getString(R.string.dlg_error_header))
-                    .setMessage(getString(R.string.dlg_registration_error_message, errorMessage))
+                    .setMessage(getString(R.string.dlg_registration_error_message, syncDataResult.getError()))
                     .setPositiveButton(R.string.ok, null)
                     .setIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.vd_error_red_24dp, null))
                     .show();

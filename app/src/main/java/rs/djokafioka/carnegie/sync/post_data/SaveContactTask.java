@@ -1,41 +1,48 @@
 package rs.djokafioka.carnegie.sync.post_data;
 
 import com.google.gson.Gson;
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.IntDef;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import rs.djokafioka.carnegie.model.Contact;
 import rs.djokafioka.carnegie.sync.BaseBackgroundTask;
 import rs.djokafioka.carnegie.sync.model.SyncDataResult;
 import rs.djokafioka.carnegie.utils.AppConsts;
 
+import static java.lang.annotation.RetentionPolicy.SOURCE;
+
 /**
- * Created by Djordje on 21.1.2022..
+ * Created by Djordje on 23.1.2022..
  */
-public class RegistrationTask extends BaseBackgroundTask
+public class SaveContactTask extends BaseBackgroundTask
 {
-    private static final String TAG = "RegistrationTask";
+    @Retention(SOURCE)
+    @IntDef({ADD_CONTACT, EDIT_CONTACT})
+    public @interface SaveType{}
+    public static final int ADD_CONTACT = 0;
+    public static final int EDIT_CONTACT = 1;
 
     private final OkHttpClient mClient;
     private Call mCall;
     private Gson mGson;
     private SyncDataResult mSyncDataResult;
-    private OnRegistrationListener mOnRegistrationListener;
-    private RegisterBindingModel mRegisterBindingModel;
+    private int mSaveType;
+    private Contact mContact;
+    private OnContactChangeListener mOnContactChangeListener;
 
-    public RegistrationTask(String email, String password, String confirmPassword, OnRegistrationListener onRegistrationListener)
+    public SaveContactTask(@SaveType int saveType, Contact contact, OnContactChangeListener onContactChangeListener)
     {
-        mRegisterBindingModel = new RegisterBindingModel(email, password, confirmPassword);
         mClient = new OkHttpClient.Builder()
                 .connectTimeout(AppConsts.CONNECTIVITY_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .writeTimeout(AppConsts.WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -44,7 +51,9 @@ public class RegistrationTask extends BaseBackgroundTask
 
         mGson = new Gson();
         mSyncDataResult = new SyncDataResult();
-        mOnRegistrationListener = onRegistrationListener;
+        mSaveType = saveType;
+        mContact = contact;
+        mOnContactChangeListener = onContactChangeListener;
     }
 
     @Override
@@ -52,6 +61,7 @@ public class RegistrationTask extends BaseBackgroundTask
     {
         Request request = new Request.Builder()
                 .url(composeServerAddress())
+                .header("Authorization", getHeaderFormattedToken())
                 .post(RequestBody.create(getJsonBody(), AppConsts.MEDIA_TYPE_JSON))
                 .build();
 
@@ -66,6 +76,15 @@ public class RegistrationTask extends BaseBackgroundTask
             if (response.isSuccessful())
             {
                 mSyncDataResult.setSuccess(true);
+                if (mSaveType == ADD_CONTACT)
+                {
+                    body = response.body();
+                    if(body != null)
+                    {
+                        Contact c = mGson.fromJson(body.string(), Contact.class);
+                        mContact.setId(c.getId());
+                    }
+                }
             }
             else
             {
@@ -105,79 +124,26 @@ public class RegistrationTask extends BaseBackgroundTask
     @Override
     public void onPostExecute()
     {
-        if (mOnRegistrationListener != null)
-            mOnRegistrationListener.onRegistrationCompleted(mSyncDataResult);
-    }
-
-    private String getJsonBody()
-    {
-        return mGson.toJson(mRegisterBindingModel);
+        if (mOnContactChangeListener != null)
+            mOnContactChangeListener.onContactChanged(mSyncDataResult);
     }
 
     private String composeServerAddress()
     {
-        return getAPIURL() + AppConsts.API_REGISTER;
+        if (mSaveType == EDIT_CONTACT)
+            return getAPIURL() + AppConsts.API_EDIT_CONTACT;
+        else
+            return getAPIURL() + AppConsts.API_ADD_CONTACT;
     }
 
-    public interface OnRegistrationListener
+    private String getJsonBody()
     {
-        void onRegistrationCompleted(SyncDataResult syncDataResult);
+        return mGson.toJson(mContact);
     }
 
-    private static class RegisterBindingModel
+    public interface OnContactChangeListener
     {
-        @Expose
-        @SerializedName("Email")
-        private String mEmail;
-
-        @Expose
-        @SerializedName("Password")
-        private String mPassword;
-
-        @Expose
-        @SerializedName("ConfirmPassword")
-        private String mConfirmPassword;
-
-        @Expose
-        @SerializedName("AuthorizationCode")
-        private final String mAuthorizationCode;
-
-        public RegisterBindingModel(String email, String password, String confirmPassword)
-        {
-            mEmail = email;
-            mPassword = password;
-            mConfirmPassword = confirmPassword;
-            mAuthorizationCode = AppConsts.API_AUTHORIZATION_CODE;
-        }
-
-        public String getEmail()
-        {
-            return mEmail;
-        }
-
-        public void setEmail(String email)
-        {
-            mEmail = email;
-        }
-
-        public String getPassword()
-        {
-            return mPassword;
-        }
-
-        public void setPassword(String password)
-        {
-            mPassword = password;
-        }
-
-        public String getConfirmPassword()
-        {
-            return mConfirmPassword;
-        }
-
-        public void setConfirmPassword(String confirmPassword)
-        {
-            mConfirmPassword = confirmPassword;
-        }
+        void onContactChanged(SyncDataResult syncDataResult);
     }
+
 }

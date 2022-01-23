@@ -1,4 +1,4 @@
-package rs.djokafioka.carnegie.controller;
+package rs.djokafioka.carnegie.controller.settings;
 
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;

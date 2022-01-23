@@ -20,22 +20,22 @@ import rs.djokafioka.carnegie.sync.model.SyncDataResult;
 import rs.djokafioka.carnegie.utils.AppConsts;
 
 /**
- * Created by Djordje on 21.1.2022..
+ * Created by Djordje on 23.1.2022..
  */
-public class RegistrationTask extends BaseBackgroundTask
+public class ChangePasswordTask extends BaseBackgroundTask
 {
-    private static final String TAG = "RegistrationTask";
+    private static final String TAG = "ChangePasswordTask";
 
     private final OkHttpClient mClient;
     private Call mCall;
     private Gson mGson;
     private SyncDataResult mSyncDataResult;
-    private OnRegistrationListener mOnRegistrationListener;
-    private RegisterBindingModel mRegisterBindingModel;
+    private OnChangePasswordListener mOnChangePasswordListener;
+    private ChangePasswordBindingModel mChangePasswordBindingModel;
 
-    public RegistrationTask(String email, String password, String confirmPassword, OnRegistrationListener onRegistrationListener)
+    public ChangePasswordTask(String oldPassword, String newPassword, String confirmPassword, OnChangePasswordListener onChangePasswordListener)
     {
-        mRegisterBindingModel = new RegisterBindingModel(email, password, confirmPassword);
+        mChangePasswordBindingModel = new ChangePasswordBindingModel(oldPassword, newPassword, confirmPassword);
         mClient = new OkHttpClient.Builder()
                 .connectTimeout(AppConsts.CONNECTIVITY_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .writeTimeout(AppConsts.WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -44,7 +44,7 @@ public class RegistrationTask extends BaseBackgroundTask
 
         mGson = new Gson();
         mSyncDataResult = new SyncDataResult();
-        mOnRegistrationListener = onRegistrationListener;
+        mOnChangePasswordListener = onChangePasswordListener;
     }
 
     @Override
@@ -52,6 +52,7 @@ public class RegistrationTask extends BaseBackgroundTask
     {
         Request request = new Request.Builder()
                 .url(composeServerAddress())
+                .header("Authorization", getHeaderFormattedToken())
                 .post(RequestBody.create(getJsonBody(), AppConsts.MEDIA_TYPE_JSON))
                 .build();
 
@@ -105,69 +106,64 @@ public class RegistrationTask extends BaseBackgroundTask
     @Override
     public void onPostExecute()
     {
-        if (mOnRegistrationListener != null)
-            mOnRegistrationListener.onRegistrationCompleted(mSyncDataResult);
+        if (mOnChangePasswordListener != null)
+            mOnChangePasswordListener.onChangePasswordCompleted(mSyncDataResult);
     }
 
     private String getJsonBody()
     {
-        return mGson.toJson(mRegisterBindingModel);
+        return mGson.toJson(mChangePasswordBindingModel);
     }
 
     private String composeServerAddress()
     {
-        return getAPIURL() + AppConsts.API_REGISTER;
+        return getAPIURL() + AppConsts.API_CHANGE_PASSWORD;
     }
 
-    public interface OnRegistrationListener
+    public interface OnChangePasswordListener
     {
-        void onRegistrationCompleted(SyncDataResult syncDataResult);
+        void onChangePasswordCompleted(SyncDataResult syncDataResult);
     }
 
-    private static class RegisterBindingModel
+    private static class ChangePasswordBindingModel
     {
         @Expose
-        @SerializedName("Email")
-        private String mEmail;
+        @SerializedName("OldPassword")
+        private String mOldPassword;
 
         @Expose
-        @SerializedName("Password")
-        private String mPassword;
+        @SerializedName("NewPassword")
+        private String mNewPassword;
 
         @Expose
         @SerializedName("ConfirmPassword")
         private String mConfirmPassword;
 
-        @Expose
-        @SerializedName("AuthorizationCode")
-        private final String mAuthorizationCode;
-
-        public RegisterBindingModel(String email, String password, String confirmPassword)
+        public ChangePasswordBindingModel(String oldPassword, String newPassword, String confirmPassword)
         {
-            mEmail = email;
-            mPassword = password;
+            mOldPassword = oldPassword;
+            mNewPassword = newPassword;
             mConfirmPassword = confirmPassword;
-            mAuthorizationCode = AppConsts.API_AUTHORIZATION_CODE;
         }
 
-        public String getEmail()
+        public String getOldPassword()
         {
-            return mEmail;
+            return mOldPassword;
         }
 
-        public void setEmail(String email)
+        public void setOldPassword(String oldPassword)
         {
-            mEmail = email;
+            mOldPassword = oldPassword;
         }
 
-        public String getPassword()
+        public String getNewPassword()
         {
-            return mPassword;
+            return mNewPassword;
         }
 
-        public void setPassword(String password)
+        public void setNewPassword(String newPassword)
         {
-            mPassword = password;
+            mNewPassword = newPassword;
         }
 
         public String getConfirmPassword()
